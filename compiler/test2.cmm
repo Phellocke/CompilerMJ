@@ -1,7 +1,10 @@
-i = 1;
-    while(i < 5)
-    {
-    	a[i] = i+1;
-    	print(a[i]);
-    	i = i + 1;
-    }
+
+void foo(){
+	i = 1;
+	    while(i < 5)
+	    {
+	    	a[i] = i+1;
+	    	print(a[i]);
+	    	i = i + 1;
+	    }
+}

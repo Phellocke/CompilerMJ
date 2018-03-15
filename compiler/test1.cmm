@@ -1,10 +1,10 @@
-void foo(number x, string y)
+void foo(float x, string y)
 {
 	print("x");
 	print("y");
 }
 
-int foo(float n, interger j)
+int foo(float n, int j)
 {
 	return n+j;
 }

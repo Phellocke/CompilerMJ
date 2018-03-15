@@ -1,7 +1,10 @@
 
-int i;
-for(i = 0; i < 5; i++)
-{
-	print(i);
-}
 
+void foo4()
+{
+	int i;
+	for(i = 0; i < 5; i++)
+	{
+		print(i);
+	}
+}
