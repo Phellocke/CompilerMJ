@@ -1,1 +1,20 @@
-test3.cmm
+    int t;
+    t = 1;
+    int f;
+    f = 0;
+
+    if (t == 1 && f == 0)
+    	print("T and F");
+
+    if (t == 1 || f == 0)
+    	print("T or F");
+
+    if (t == 0 && f == 0)
+    	print("This is not right");
+    else
+    	print("Not T and F");
+
+    if (t == 0 || f == 1)
+    	print("How could this be");
+    else
+    	print("Not T or F");

@@ -1,0 +1,10 @@
+void foo(number x, string y)
+{
+	print("x");
+	print("y");
+}
+
+int foo(float n, interger j)
+{
+	return n+j;
+}

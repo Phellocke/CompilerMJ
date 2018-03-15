@@ -183,14 +183,13 @@ void Parser::Statement() {
 		case 20 /* "for" */: {
 			Get();
 			Expect(8 /* "(" */);
-			if (la->kind == 12 /* "int" */ || la->kind == 13 /* "float" */ || la->kind == 14 /* "void" */) {
-				Declaration();
-			} else if (StartOf(3)) {
-				if (StartOf(4)) {
-					Expression();
+			if (StartOf(3)) {
+				if (la->kind == 12 /* "int" */ || la->kind == 13 /* "float" */ || la->kind == 14 /* "void" */) {
+					Declaration();
+				} else {
+					AssignmentExpression();
 				}
-				Expect(7 /* ";" */);
-			} else SynErr(42);
+			}
 			if (StartOf(4)) {
 				Expression();
 			}
@@ -219,17 +218,10 @@ void Parser::Statement() {
 			break;
 		}
 		case _identifier: case _integer: case _float: case _string: case 7 /* ";" */: case 8 /* "(" */: case 15 /* "*" */: case 32 /* "+" */: case 33 /* "-" */: case 36 /* "!" */: case 37 /* "&" */: {
-			if (StartOf(4)) {
-				Expression();
-				if (la->kind == 23 /* "=" */) {
-					Get();
-					Expression();
-				}
-			}
-			Expect(7 /* ";" */);
+			AssignmentExpression();
 			break;
 		}
-		default: SynErr(43); break;
+		default: SynErr(42); break;
 		}
 }
 
@@ -239,6 +231,17 @@ void Parser::Expression() {
 			Get();
 			AndExpression();
 		}
+}
+
+void Parser::AssignmentExpression() {
+		if (StartOf(4)) {
+			Expression();
+			if (la->kind == 23 /* "=" */) {
+				Get();
+				Expression();
+			}
+		}
+		Expect(7 /* ";" */);
 }
 
 void Parser::AndExpression() {
@@ -356,7 +359,7 @@ void Parser::Value() {
 			Get();
 		} else if (la->kind == _string) {
 			Get();
-		} else SynErr(44);
+		} else SynErr(43);
 }
 
 
@@ -479,7 +482,7 @@ bool Parser::StartOf(int s) {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
 		{x,x,x,x, x,T,x,x, x,x,x,x, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
 		{x,T,T,T, T,x,x,T, T,x,T,x, T,T,T,T, x,x,T,x, T,T,T,x, x,x,x,x, x,x,x,x, T,T,x,x, T,T,x,x},
-		{x,T,T,T, T,x,x,T, T,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x, T,T,x,x},
+		{x,T,T,T, T,x,x,T, T,x,x,x, T,T,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x, T,T,x,x},
 		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x, T,T,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, x,x,x,x, x,x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x, T,x,x,x}
@@ -546,8 +549,7 @@ void Errors::SynErr(int line, int col, int n) {
 			case 40: s = coco_string_create(L"invalid Cmm"); break;
 			case 41: s = coco_string_create(L"invalid TypeSpecifier"); break;
 			case 42: s = coco_string_create(L"invalid Statement"); break;
-			case 43: s = coco_string_create(L"invalid Statement"); break;
-			case 44: s = coco_string_create(L"invalid Value"); break;
+			case 43: s = coco_string_create(L"invalid Value"); break;
 
 		default:
 		{

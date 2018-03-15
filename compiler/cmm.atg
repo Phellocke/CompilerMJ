@@ -47,12 +47,14 @@ PRODUCTIONS $checkEOF=true
                        .
     Statement          = "{" { Declaration | Statement } "}"
                        | "if" "(" Expression ")" Statement [ "else" Statement ]
-                       | "for" "(" ( Declaration | [Expression] ';') [Expression] ';' [Expression] ")" Statement
+                       | "for" "(" [( Declaration | AssignmentExpression )] [Expression] ';' [Expression] ")" Statement
                        | "while" "(" Expression ")" Statement
                        | "return" [ Expression ] ";"
-                       | [ Expression [ "=" Expression ] ] ";"
+                       | AssignmentExpression
                        .
-    Expression         = AndExpression { "||" AndExpression }
+    AssignmentExpression = [ Expression [ "=" Expression ] ] ";"
+                       .
+    Expression         = AndExpression { "||" AndExpression } 
                        .
     AndExpression      = RelationExpression { "&&" RelationExpression }
                        .

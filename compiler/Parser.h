@@ -66,6 +66,7 @@ public:
 	void Declaration();
 	void Statement();
 	void Expression();
+	void AssignmentExpression();
 	void AndExpression();
 	void RelationExpression();
 	void SimpleExpression();
