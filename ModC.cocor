@@ -1,0 +1,52 @@
+COMPILER ModC
+
+CHARACTERS
+    Letter = '$' + 'A' .. 'Z' + '_' + 'a' .. 'z' + '\u00a2' .. '\u00a6'
+        + '\u00aa' + '\u00b5' + '\u00ba' + '\u00c0' .. '\u00d6' + '\u00d8'
+        .. '\u00f6' + '\u00f8' .. '\u0236'.
+    LetterAndDigit = Letter + '0' .. '9'.
+    NotStar = ANY - '*' - '/'.
+    CharInLine = ANY - '\r' - '\n'.
+    NoQuoteNoBackslash = CharInLine - '\'' - '\\'.
+    NoDoubleQuoteNoBackslash = CharInLine - '\"' - '\\'.
+    NonZeroDigit = "123456789".
+    Digit = '0' + NonZeroDigit.
+    HexDigit = Digit + "abcdefABCDEF".
+    OctalDigit = "01234567".
+    ZeroToThree = "0123".
+    cr = '\r'.
+    lf = '\n'.
+    ht = '\t'.
+    ff = '\f'.
+    controlZ = '\u001a'.
+
+TOKENS
+    Identifier = Letter {LetterAndDigit}.
+    Float = (( Digit {Digit} '.' [Digit {Digit}] [ ( 'e' | 'E' )
+        [ '+' | '-' ] Digit {Digit} ] | '.' Digit {Digit} [ ( 'e' | 'E' ) [ '+'
+        | '-' ] Digit {Digit} ] | Digit {Digit} ( 'e' | 'E' ) [ '+' | '-' ]
+        Digit {Digit} ) [( 'f' | 'F' | 'd' | 'D' )]) | (Digit {Digit} [ ( 'e' |
+        'E' ) [ '+' | '-' ] Digit {Digit} ] ( 'f' | 'F' | 'd' | 'D' )).
+    String = '\"' [ ( NoDoubleQuoteNoBackslash | ('\\' ( 'b' | 't' | 'n'
+        | 'f' | 'r' | '\"' | '\'' | '\\' | OctalDigit | OctalDigit OctalDigit |
+        ZeroToThree OctalDigit OctalDigit )) ) { ( NoDoubleQuoteNoBackslash |
+        ('\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\"' | '\'' | '\\' | OctalDigit |
+        OctalDigit OctalDigit | ZeroToThree OctalDigit OctalDigit )) ) } ] '\"'.
+
+PRAGMAS
+    TraditionalComment = "/*" { '/' | NotStar | '*' {'*'} NotStar } {'*'} "*/".
+    EndOfLineComment = "//" { CharInLine } ( cr | lf | cr lf ).
+
+IGNORE cr + lf + ht + ff
+
+PRODUCTIONS
+    ModC  = { Statement } .
+    Statement   = CompoundStatement
+                | "if" "(" Expression ")" Statement [ "else" Statement ]
+                | "for" "(" ForControl ")" Statement
+                | "while" "(" Expression ")" Statement
+                | Return [ Expression ] ";"
+                | [ StatementExpression ] ";"
+                .
+
+END ModC.

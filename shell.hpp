@@ -1,7 +1,7 @@
 #ifndef __COMPILER_HPP__
 #define __COMPILER_HPP__
 
-const std::string COMPILER  = "MumboJumbo";
+const std::string COMPILER  = "ModC";
 const int VERSION           = 0;
 const int REVISION          = 2;
 const int PATCH             = 0;

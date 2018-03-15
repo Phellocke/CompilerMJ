@@ -1,0 +1,73 @@
+#include "macros.h"
+
+COMPILER Cmm
+$S
+
+CHARACTERS
+    letter       = 'A' .. 'Z' + 'a' .. 'z' .
+    digit        = "0123456789" .
+    hex_digit    = digit + "ABCDEFabcdef" .
+    tab          = '\t' .
+    cr           = '\r' .
+    lf           = '\n' .
+    eol          = cr + lf .
+    string_chars = ANY - '"' - cr - lf .
+    macro_chars  = ANY - cr - lf .
+
+TOKENS
+    identifier = ( letter | '_' ) { letter | digit | '_' } .
+    integer    = digit { digit } | "0x" hex_digit { hex_digit } .
+    float      = ( digit { digit } '.' { digit } | { digit } '.' digit { digit } )
+                      [ ( 'e' | 'E' ) digit { digit } ] .
+    string     = '"' { string_chars } '"' .
+
+PRAGMAS
+    macro = '#' { macro_chars } eol . (. process_macro(la); .)
+
+COMMENTS FROM "/*" TO "*/"
+COMMENTS FROM "//" TO lf
+
+IGNORE tab + cr + lf
+
+PRODUCTIONS $checkEOF=true
+    Cmm                = { [ "extern" ] TypeSpecifier identifier
+                           ( [ ArrayIndex ] { "," identifier [ ArrayIndex ] } ";"
+                           | "(" [ Parameter { "," Parameter } ] ")" 
+                              ( "{" { Declaration | Statement } "}" | ";" )
+                           )
+                         }
+                       .
+    TypeSpecifier      = ( "int" | "float" | "void" ) { "*" }
+                       .
+    ArrayIndex         = "[" integer "]"
+                       .
+    Parameter          = TypeSpecifier identifier [ "[" "]" ]
+                       .
+    Declaration        = TypeSpecifier identifier [ ArrayIndex ] { "," identifier [ ArrayIndex ] } ";"
+                       .
+    Statement          = "{" { Declaration | Statement } "}"
+                       | "if" "(" Expression ")" Statement [ "else" Statement ]
+                       | "for" "(" ( Declaration | [Expression] ';') [Expression] ';' [Expression] ")" Statement
+                       | "while" "(" Expression ")" Statement
+                       | "return" [ Expression ] ";"
+                       | [ Expression [ "=" Expression ] ] ";"
+                       .
+    Expression         = AndExpression { "||" AndExpression }
+                       .
+    AndExpression      = RelationExpression { "&&" RelationExpression }
+                       .
+    RelationExpression = SimpleExpression { ( "<=" | "<" | ">=" | ">" | "==" | "!=" ) SimpleExpression }
+                       .
+    SimpleExpression   = Term { ( "+" | "-" ) Term }
+                       .
+    Term               = Factor { ( "*" | "/" | "%" ) Factor }
+                       .
+    Factor             = { "+" | "-" | "!" | "*" } Value
+                       .
+    Value              = "(" Expression ")"
+                       | [ "&" ] identifier [ "[" Expression "]" | "(" [ Expression { "," Expression } ] ")" ]
+                       | integer
+                       | float
+                       | string
+                       .
+END Cmm.
