@@ -5,8 +5,7 @@
 
 #include "macros.h"
 #include "symbols.hpp"
-SymTab tab; // symbol table
-string name;
+SymTab tab;
 
 
 #include "Scanner.h"

@@ -1,7 +1,10 @@
 #include "macros.h"
+#include "symbols.hpp"
+SymTab tab; // symbol table
+string name;
 
 COMPILER Cmm
-$S
+
 
 CHARACTERS
     letter       = 'A' .. 'Z' + 'a' .. 'z' .
@@ -22,7 +25,7 @@ TOKENS
     string     = '"' { string_chars } '"' .
 
 PRAGMAS
-    macro = '#' { macro_chars } eol . (. process_macro(la); .)
+    macro = '#' { macro_chars } eol . 
 
 COMMENTS FROM "/*" TO "*/"
 COMMENTS FROM "//" TO lf
@@ -30,10 +33,11 @@ COMMENTS FROM "//" TO lf
 IGNORE tab + cr + lf
 
 PRODUCTIONS $checkEOF=true
-    Cmm                = { [ "extern" ] TypeSpecifier identifier
-                           ( [ ArrayIndex ] { "," identifier [ ArrayIndex ] } ";"
-                           | "(" [ Parameter { "," Parameter } ] ")" 
-                              ( "{" { Declaration | Statement } "}" | ";" )
+    Cmm                = { [ "extern" ] TypeSpecifier identifier (. tab.define(name(t->val.begin(), t->val.end())); .)
+                           ( 
+                            [ ArrayIndex ] { "," identifier [ ArrayIndex ] } ";"
+                           | (. tab.openScope(); .) "(" [ Parameter { "," Parameter } ] ")" 
+                            ( "{" { Declaration | Statement } "}" | ";" ) (. tab.closeScope(); .)
                            )
                          }
                        .
@@ -41,20 +45,20 @@ PRODUCTIONS $checkEOF=true
                        .
     ArrayIndex         = "[" integer "]"
                        .
-    Parameter          = TypeSpecifier identifier [ "[" "]" ]
+    Parameter          = TypeSpecifier identifier [ "[" "]" ] (. tab.define(name(t->val.begin(), t->val.end())); .)
                        .
-    Declaration        = TypeSpecifier identifier [ ArrayIndex ] { "," identifier [ ArrayIndex ] } ";"
+    Declaration        = TypeSpecifier identifier [ ArrayIndex ] (. tab.define(name(t->val.begin(), t->val.end())); .)  { "," identifier [ ArrayIndex ] (. tab.define(name(t->val.begin(), t->val.end())); .) } ";"
                        .
-    Statement          = "{" { Declaration | Statement } "}"
-                       | "if" "(" Expression ")" Statement [ "else" Statement ]
-                       | "for" "(" [( Declaration | AssignmentExpression )] [Expression] ';' [Expression] ")" Statement
+    Statement          = (. tab.openScope(); .) "{" { Declaration | Statement } "}" (. tab.closeScope(); .)
+                       | "if" "(" [ Expression ] ")" Statement [ "else" Statement ]
+                       | "for" "(" [ Expression ] ";" [ Expression ] ";" [ Expression ] ")" Statement
                        | "while" "(" Expression ")" Statement
                        | "return" [ Expression ] ";"
-                       | AssignmentExpression
+                       | [ Expression ] ";"
                        .
-    AssignmentExpression = [ Expression [ "=" Expression ] ] ";"
+    Expression         = OrExpression { "=" OrExpression } 
                        .
-    Expression         = AndExpression { "||" AndExpression } 
+    OrExpression       = AndExpression { "||" AndExpression }
                        .
     AndExpression      = RelationExpression { "&&" RelationExpression }
                        .
@@ -67,7 +71,9 @@ PRODUCTIONS $checkEOF=true
     Factor             = { "+" | "-" | "!" | "*" } Value
                        .
     Value              = "(" Expression ")"
-                       | [ "&" ] identifier [ "[" Expression "]" | "(" [ Expression { "," Expression } ] ")" ]
+                       | [ "&" ] identifier 
+                       (. if (!tab.isDefined(t->val.begin(), t->val.end())) fprintf(stderr, "ERROR: identifier not defined:  '%s'\n", t->val.begin(), t->val.end())); .)
+                       [ "[" Expression "]" | "(" [ Expression { "," Expression } ] ")" ]
                        | integer
                        | float
                        | string

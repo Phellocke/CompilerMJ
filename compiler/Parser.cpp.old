@@ -70,7 +70,7 @@ void Parser::Cmm() {
 			}
 			TypeSpecifier();
 			Expect(_identifier);
-			tab.define(name(t->val.begin(), t->val.end())); 
+			tab.define(t->val); 
 			if (la->kind == 6 /* "," */ || la->kind == 7 /* ";" */ || la->kind == 16 /* "[" */) {
 				if (la->kind == 16 /* "[" */) {
 					ArrayIndex();
@@ -138,7 +138,6 @@ void Parser::Parameter() {
 			Get();
 			Expect(17 /* "]" */);
 		}
-		tab.define(name(t->val.begin(), t->val.end())); 
 }
 
 void Parser::Declaration() {
@@ -147,14 +146,14 @@ void Parser::Declaration() {
 		if (la->kind == 16 /* "[" */) {
 			ArrayIndex();
 		}
-		tab.define(name(t->val.begin(), t->val.end())); 
+		tab.define(t->val) 
 		while (la->kind == 6 /* "," */) {
 			Get();
 			Expect(_identifier);
 			if (la->kind == 16 /* "[" */) {
 				ArrayIndex();
 			}
-			tab.define(name(t->val.begin(), t->val.end())); 
+			tab.define(t->val) 
 		}
 		Expect(7 /* ";" */);
 }
@@ -342,7 +341,7 @@ void Parser::Value() {
 				Get();
 			}
 			Expect(_identifier);
-			if (!tab.isDefined(t->val.begin(), t->val.end())) fprintf(stderr, "ERROR: identifier not defined:  '%s'\n", t->val.begin(), t->val.end())); 
+			if (!tab.isDefined(t->val) fprintf(stderr, "ERROR: identifier not defined:  '%s'\n", t->val); 
 			if (la->kind == 8 /* "(" */ || la->kind == 16 /* "[" */) {
 				if (la->kind == 16 /* "[" */) {
 					Get();
